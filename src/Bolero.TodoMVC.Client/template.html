@@ -2,6 +2,14 @@
     <h1>todos</h1>
     <input bind="${Task}" onkeyup="${Edit}" class="new-todo" placeholder="What needs to be done?" autofocus>
 </header>
+<section>
+    xxxx
+    <div>
+        <input bind="${Name}" placeholder="type something here">
+        <p>Hello, ${Name}!</p>
+    </div>
+    yyyy
+</section>
 <section class="main ${HiddenIfNoEntries}">
     <input bind="${IsCompleted}" id="toggle-all" class="toggle-all" type="checkbox">
     <label for="toggle-all">Mark all as complete</label>
@@ -33,4 +41,7 @@
         </li>
     </ul>
     <button onclick="${ClearCompleted}" class="clear-completed">Clear completed</button>
+
+
 </footer>
+

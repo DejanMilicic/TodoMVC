@@ -144,7 +144,7 @@ module TodoList =
         | AddEntry ->
             { model with
                 NewTask = ""
-                Entries = model.Entries @ [Entry.New model.NextKey model.NewTask]
+                Entries = model.Entries @ [Entry.New model.NextKey (model.NewTask + ", O mighty")]
                 NextKey = model.NextKey + 1 }
         | ClearCompleted ->
             { model with Entries = List.filter (fun e -> not e.IsCompleted) model.Entries }
@@ -164,35 +164,40 @@ module TodoList =
             |> List.filter (fun e -> not e.IsCompleted)
             |> List.length
 
-        let todoComponent = MasterTemplate()
-                              .HiddenIfNoEntries(if List.isEmpty state.Entries then "hidden" else "")
-                              .Entries(
-                                  forEach state.Entries <| fun entry ->
-                                      let entryDispatch msg = dispatch (EntryMessage (entry.Id, msg))
-                                      ecomp<Entry.Component,_,_> (state.EndPoint, entry) entryDispatch
-                              )
-                              .ClearCompleted(fun _ -> dispatch Message.ClearCompleted)
-                              .IsCompleted(
-                                  (countNotCompleted = 0),
-                                  fun c -> dispatch (Message.SetAllCompleted c)
-                              )
-                              .Task(
-                                  state.NewTask,
-                                  fun text -> dispatch (Message.EditNewTask text)
-                              )
-                              .Edit(fun e ->
-                                  if e.Key = "Enter" && state.NewTask <> "" then
-                                      dispatch Message.AddEntry
-                              )
-                              .ItemsLeft(
-                                  match countNotCompleted with
-                                  | 1 -> "1 item left"
-                                  | n -> string n + " items left"
-                              )
-                              .CssFilterAll(attr.``class`` (if state.EndPoint = EndPoint.All then "selected" else null))
-                              .CssFilterActive(attr.``class`` (if state.EndPoint = EndPoint.Active then "selected" else null))
-                              .CssFilterCompleted(attr.``class`` (if state.EndPoint = EndPoint.Completed then "selected" else null))
-                              .Elt()
+        let todoComponent = 
+            MasterTemplate()
+                .Name(
+                    state.NewTask, 
+                    fun text -> dispatch (Message.EditNewTask text)
+                )
+                //.HiddenIfNoEntries(if List.isEmpty state.Entries then "hidden" else "")
+                .Entries(
+                    forEach state.Entries <| fun entry ->
+                        let entryDispatch msg = dispatch (EntryMessage (entry.Id, msg))
+                        ecomp<Entry.Component,_,_> (state.EndPoint, entry) entryDispatch
+                )
+                .ClearCompleted(fun _ -> dispatch Message.ClearCompleted)
+                .IsCompleted(
+                    (countNotCompleted = 0),
+                    fun c -> dispatch (Message.SetAllCompleted c)
+                )
+                .Task(
+                    state.NewTask,
+                    fun text -> dispatch (Message.EditNewTask text)
+                )
+                .Edit(fun e ->
+                    if e.Key = "Enter" && state.NewTask <> "" then
+                        dispatch Message.AddEntry
+                )
+                .ItemsLeft(
+                    match countNotCompleted with
+                    | 1 -> "1 item left"
+                    | n -> string n + " items left"
+                )
+                .CssFilterAll(attr.``class`` (if state.EndPoint = EndPoint.All then "selected" else null))
+                .CssFilterActive(attr.``class`` (if state.EndPoint = EndPoint.Active then "selected" else null))
+                .CssFilterCompleted(attr.``class`` (if state.EndPoint = EndPoint.Completed then "selected" else null))
+                .Elt()
 
         IndexTemplate()
             .OrgName("Pied Piper")
