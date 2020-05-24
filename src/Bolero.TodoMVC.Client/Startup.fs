@@ -10,7 +10,7 @@ type Startup() =
         ()
 
     member __.Configure(app: IComponentsApplicationBuilder) =
-        app.AddComponent<Main.TodoList.Component>(".todoapp")
+        app.AddComponent<Main.TodoList.Component>("#application")
 
 module Program =
 

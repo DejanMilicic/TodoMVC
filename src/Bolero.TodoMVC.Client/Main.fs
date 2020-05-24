@@ -6,6 +6,7 @@ open Bolero.Html
 
 /// Parses the template.html file and provides types to fill it with dynamic content.
 type MasterTemplate = Template<"template.html">
+type IndexTemplate = Template<"wwwroot/index.html">
 
 /// Our application has three URL endpoints.
 type EndPoint =
@@ -62,6 +63,8 @@ module Entry =
             Some { e with Editing = None }
         | SetCompleted value ->
             Some { e with IsCompleted = value }
+
+    
 
     /// Render a given Todo entry.
     let Render (endpoint, entry) dispatch =
@@ -160,34 +163,40 @@ module TodoList =
             state.Entries
             |> List.filter (fun e -> not e.IsCompleted)
             |> List.length
-        MasterTemplate()
-            .HiddenIfNoEntries(if List.isEmpty state.Entries then "hidden" else "")
-            .Entries(
-                forEach state.Entries <| fun entry ->
-                    let entryDispatch msg = dispatch (EntryMessage (entry.Id, msg))
-                    ecomp<Entry.Component,_,_> (state.EndPoint, entry) entryDispatch
-            )
-            .ClearCompleted(fun _ -> dispatch Message.ClearCompleted)
-            .IsCompleted(
-                (countNotCompleted = 0),
-                fun c -> dispatch (Message.SetAllCompleted c)
-            )
-            .Task(
-                state.NewTask,
-                fun text -> dispatch (Message.EditNewTask text)
-            )
-            .Edit(fun e ->
-                if e.Key = "Enter" && state.NewTask <> "" then
-                    dispatch Message.AddEntry
-            )
-            .ItemsLeft(
-                match countNotCompleted with
-                | 1 -> "1 item left"
-                | n -> string n + " items left"
-            )
-            .CssFilterAll(attr.``class`` (if state.EndPoint = EndPoint.All then "selected" else null))
-            .CssFilterActive(attr.``class`` (if state.EndPoint = EndPoint.Active then "selected" else null))
-            .CssFilterCompleted(attr.``class`` (if state.EndPoint = EndPoint.Completed then "selected" else null))
+
+        let todoComponent = MasterTemplate()
+                              .HiddenIfNoEntries(if List.isEmpty state.Entries then "hidden" else "")
+                              .Entries(
+                                  forEach state.Entries <| fun entry ->
+                                      let entryDispatch msg = dispatch (EntryMessage (entry.Id, msg))
+                                      ecomp<Entry.Component,_,_> (state.EndPoint, entry) entryDispatch
+                              )
+                              .ClearCompleted(fun _ -> dispatch Message.ClearCompleted)
+                              .IsCompleted(
+                                  (countNotCompleted = 0),
+                                  fun c -> dispatch (Message.SetAllCompleted c)
+                              )
+                              .Task(
+                                  state.NewTask,
+                                  fun text -> dispatch (Message.EditNewTask text)
+                              )
+                              .Edit(fun e ->
+                                  if e.Key = "Enter" && state.NewTask <> "" then
+                                      dispatch Message.AddEntry
+                              )
+                              .ItemsLeft(
+                                  match countNotCompleted with
+                                  | 1 -> "1 item left"
+                                  | n -> string n + " items left"
+                              )
+                              .CssFilterAll(attr.``class`` (if state.EndPoint = EndPoint.All then "selected" else null))
+                              .CssFilterActive(attr.``class`` (if state.EndPoint = EndPoint.Active then "selected" else null))
+                              .CssFilterCompleted(attr.``class`` (if state.EndPoint = EndPoint.Completed then "selected" else null))
+                              .Elt()
+
+        IndexTemplate()
+            .OrgName("Pied Piper")
+            .todopage(todoComponent)
             .Elt()
 
     /// The entry point of our application, called on page load (see Startup.fs).
